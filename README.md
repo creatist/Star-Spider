@@ -3,3 +3,4 @@ use selenium and PhantomJS to extract Stars pictures , movies and their friends 
 
 The project is undev development.
 Next ,I maybe add these code into a Scrapy project.  
+Please forgive me for my poor English.
