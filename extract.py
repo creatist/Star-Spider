@@ -8,7 +8,7 @@ sys.setdefaultencoding('utf-8')
 
 from lxml import etree
 import os
-
+'''
 def get_attr(text ,match_xpath,attrname):
     
     html = etree.HTML(text)
@@ -16,15 +16,25 @@ def get_attr(text ,match_xpath,attrname):
     for r in result:
         data = r.get(attrname)
         yield data
-
+'''
+def get_attr(text ,match_xpath,attrname):
+    
+    html = etree.HTML(text)
+    result = html.xpath(match_xpath)
+    data = []
+    for r in result:
+        d = r.get(attrname)
+        data.append(d)
+    return data
 def get_attr_from_file(filename,match_xpath,attrname):
     with open(filename,'r') as f:
         text = f.read()
         return get_attr(text,match_xpath,attrname)
 
-def print_list(list):
-    for l in list:
-        print l
+def print_list(lst):
+    if isinstance(lst,list):
+        for l in lst:
+            print l
 if __name__ == '__main__':
     #获取百度结果的链接
     #data = get_attr_from_file('baidu.html','//span[@class="c-tools"]','data-tools')

@@ -32,13 +32,19 @@ class SePhBrowser():
         else :
             self.browser =  webdriver.PhantomJS()
 
-    def get(self,url,timeout=10):
+    def get(self,url,timeout=10,trytimes = 3,headers=None):
+        if trytimes < 0:
+            return
         self.browser.set_page_load_timeout(timeout)
-        return self.browser.get(url)
+        try:
+            self.browser.get(url,headers=headers)
+        except Exception as e:
+            self.get(url,timeout*1.5,trytimes=trytimes-1,headers=headers)
+        return
 
-    def baidu(self,key):
+    def baidu(self,key,headers={"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:44.0) Gecko/20100101 Firefox/44.0"}):
         #self.browser.get('http://www.baidu.com/')
-        self.get('http://www.baidu.com/')
+        self.get('http://www.baidu.com/',headers=headers)
         elem =  self.browser.find_element_by_xpath('//input[@class="s_ipt"]')
         elem.clear()
         elem.send_keys(key)
@@ -75,11 +81,16 @@ class SePhBrowser():
             #ele = self.browser.find_element_by_xpath('//span[@class="c-tools" and @id="tools_7508878632337409082_1"]')
             #ele = self.browser.find_element_by_xpath('//span[@id="tools_7508878632337409082_1"]')
             if which_one == 1 :
-                ele = self.browser.find_element_by_xpath('//span[@class="c-tools"]')    #the first result default
+                try:
+                    ele = self.browser.find_element_by_xpath('//span[@class="c-tools"]')    #the first result default
+                    return  ele.get_attribute('data-tools')
+                except Exception as e:
+                    print e
+                    return
                 
-                return  ele.get_attribute('data-tools')
         else:
-            return 'request timeout'
+            #return 'request timeout'
+            return
 
     def return_page(self,done_xpath,encode='null',wait_time=10):
         if(self.if_load_done(self.browser,done_xpath,wait_time)):

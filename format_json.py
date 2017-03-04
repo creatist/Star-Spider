@@ -16,6 +16,22 @@ def format(source_data):
     l = json.loads(out)
     return l
 
+def dict2file(datadict,filename,indent=4,ensure_ascii=False):
+    datastr = json.dumps(datadict,indent=4,ensure_ascii=False)
+    with open(filename,'w') as f:
+        f.write(datastr)
+    return
+
+def list2dict(name,valuelist):
+    i = 0
+    valuedict = {}
+    for v in valuelist:
+        i = i+1
+        key = name + str(i)
+        valuedict[key] = v
+
+    return valuedict
+
 if __name__ == '__main__':
 
     source_data = raw_input('input soruce data : ') 

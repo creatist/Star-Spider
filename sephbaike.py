@@ -38,13 +38,14 @@ def baike_url(key,type = 'phantomjs',engine = 'baidu',done_xpath= '//h3[@class="
         data = browser.select_one(done_xpath,'utf-8')
         if not data:
             print 'no json data'
-            return 'did not get jsondata'
+            return 
         json_data = format_json.format(data)
         browser.quit()
         return json_data['url']
     else :
         browser.quit()
-        return 'unknown search engine'
+        print 'unknown search engine'
+        return
 
 def baike_picture(url,type = 'phantomjs',engine = 'baidu',done_xpath= '//a[@class="image-link"]'):
     browser = SePhBrowser(type)
