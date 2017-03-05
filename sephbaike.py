@@ -34,14 +34,19 @@ def baike(url,type = 'phantomjs',engine = 'baidu',done_xpath= '//a[@class="image
 def baike_url(key,type = 'phantomjs',engine = 'baidu',done_xpath= '//h3[@class="t c-gap-bottom-small"]'):
     browser = SePhBrowser(type)
     if engine == 'baidu' :
-        browser.baidu(key)
-        data = browser.select_one(done_xpath,'utf-8')
-        if not data:
-            print 'no json data'
-            return 
-        json_data = format_json.format(data)
-        browser.quit()
-        return json_data['url']
+        try:
+            browser.baidu(key)
+            data = browser.select_one(done_xpath,'utf-8')
+        
+            if not data:
+                print 'no json data'
+                return 
+            json_data = format_json.format(data)
+            browser.quit()
+            return json_data['url']
+        except Exception as e:
+            print e
+            return
     else :
         browser.quit()
         print 'unknown search engine'

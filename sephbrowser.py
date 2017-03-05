@@ -32,7 +32,7 @@ class SePhBrowser():
         else :
             self.browser =  webdriver.PhantomJS()
 
-    def get(self,url,timeout=10,trytimes = 3,headers=None):
+    def get(self,url,timeout=10,trytimes = 3,headers={"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:44.0) Gecko/20100101 Firefox/44.0"}):
         if trytimes < 0:
             return
         self.browser.set_page_load_timeout(timeout)
@@ -45,12 +45,14 @@ class SePhBrowser():
     def baidu(self,key,headers={"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:44.0) Gecko/20100101 Firefox/44.0"}):
         #self.browser.get('http://www.baidu.com/')
         self.get('http://www.baidu.com/',headers=headers)
-        elem =  self.browser.find_element_by_xpath('//input[@class="s_ipt"]')
-        elem.clear()
-        elem.send_keys(key)
+        try:
+            elem =  self.browser.find_element_by_xpath('//input[@class="s_ipt"]')
+            elem.clear()
+            elem.send_keys(key)
         
-        self.browser.find_element_by_xpath('//input[@type="submit"]').click()
-
+            self.browser.find_element_by_xpath('//input[@type="submit"]').click()
+        except Exception as e:
+            raise e
 
         #elem = self.browser.find_element_by_name('wd')
         #elem.clear()

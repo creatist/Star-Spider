@@ -19,9 +19,14 @@ def makedir(path):
         os.mkdir(path)
 
 class Spider():
-    def __init__(self,savefilename='data.json',savedir='/mnt/hgfs/share/stars'):
+    def __init__(self,startkeylist,savefilename='data.json',savedir='/mnt/hgfs/share/stars'):
+        if not  isinstance(startkeylist,list):
+            print 'Init failed.Type error: argument startkeylist should be a list type'
+            return
+        self.startkeylist = startkeylist
         self.datadict = {}
         makedir(savedir)
+        self.savedir = savedir
         self.savefilename = os.path.join(savedir,savefilename)
         self.queue = Queue()
 
@@ -39,7 +44,8 @@ class Spider():
         i=0
         for pic in piclist:
             i = i+1
-            name = key+str(i)+os.path.splitext(pic)[1]
+            #name = key+str(i)+os.path.splitext(pic)[1]
+            name = key+str(i)+'.jpg'
             pathname = os.path.join(dirpictures,name)
             try:
                 download.get(pic,pathname)
@@ -48,27 +54,12 @@ class Spider():
                 print e
 
         dirrelation = os.path.join(dirname,'relation')
-        makedir(dirrelation)
         relationdict = valuedict['reletion']
-        for rlpic in relationdict.keys():
-            rlpicname =rlpic + os.path.splitext( relationdict[rlpic] )[1]
-            rlpicpathname = os.path.join(dirrelation,rlpicname)
-            try:
-                download.get(relationdict[rlpic],rlpicpathname)
-            except Exception as e:
-                print e
-        
-        productionslist = valuedict['productions']
-        dirproductions = os.path.join(dirname,'productions')
-        makedir(dirproductions) 
-        filepathname = os.path.join(dirproductions,'productions.txt')
-        with open(filepathname,'w') as f:
-            for x in range(len(productionslist)):
-                productionslist[x] = productionslist[x]+'\n'
-                x = x+1
+        download.get_dict(relationdict,dirrelation)
 
-            f.writelines(productionslist)
-            
+        dirproductions = os.path.join(dirname,'productions')
+        producpicdict = valuedict['productions']
+        download.get_dict(producpicdict,dirproductions)
 
     def scratch(self,key):
         #key = raw_input('input a key word: ').decode(sys.stdin.encoding)
@@ -92,8 +83,8 @@ class Spider():
         #print '代表作品图片链接'
         xpath = '//div[@class="star-info-block works"]/dl/dd/div/ul/li/a/img'
         attrname = 'src'
-        data = extract.get_attr(baikepage,xpath,attrname)
-        #extract.print_list(data)
+        produpiclist = extract.get_attr(baikepage,xpath,attrname)
+        #extract.print_list(produpiclist)
 
         #print '明星关系'
         xpath = '//div[@class="star-info-block relations"]/dl/dd/div/ul/li/a/div'
@@ -109,20 +100,20 @@ class Spider():
         namedict = {}
         namedict = dict(zip(namelist,data))
         
+        produpicdict={}
+        produpicdict = dict(zip(productions,produpiclist))
         datavalue={}
         datavalue["link"] =baikeurl
         datavalue["reletion"] = namedict
         datavalue['pictures'] = piclist
-        datavalue['productions'] = productions
+        datavalue['productions'] = produpicdict
 
         self.datadict[key] = datavalue
-
-        format_json.dict2file(self.datadict,self.savefilename)
         
-        #self.do_download(key,datavalue)
         newdatadict={}
         newdatadict[key] = datavalue
-        self.queue.put(self.datadict)
+        format_json.dict2file(newdatadict,self.savefilename,mode='a')
+        self.queue.put(newdatadict)
         return namelist
     def recu_scratch(self,keylist):
         if not keylist:
@@ -137,8 +128,6 @@ class Spider():
             for key in keylist:
                 if key in self.datadict:
                     continue
-                #x = random.randrange(0,lenth-1,1)
-                #key = keylist[x]
                 print 'scratch :'+key
                 newkeylist = self.scratch(key)
                 self.recu_scratch(newkeylist)
@@ -147,23 +136,26 @@ class Spider():
         while True:
             datadict = self.queue.get(True)
             for key in datadict:
-                self.do_download(key,datadict[key])
+                self.do_download(key,datadict[key],savedir=self.savedir)
 
+    def start(self):
+
+        proc_scratch = Process(target = spd.recu_scratch,args=(self.startkeylist,))
+        proc_download = Process(target = spd.downloads, args=())
+   
+        proc_scratch.start()
+        proc_download.start()
+
+        proc_scratch.join()
+        proc_download.terminate()
+    
 if __name__ == '__main__':
+    
     keylist =[]
     #key = raw_input('input a key: ').decode(sys.stdin.encoding)
     #filename = raw_input('input a file name to save data: ').decode(sys.stdin.encoding)
     key = u'钟欣桐'
     filename = u'log.json'
     keylist.append(key)
-    spd = Spider(savefilename=filename)
-
-    proc_scratch = Process(target = spd.recu_scratch,args=(keylist,))
-    proc_download = Process(target = spd.downloads, args=())
-   
-    proc_scratch.start()
-    proc_download.start()
-
-    proc_scratch.join()
-    proc_download.terminate()
-    
+    spd = Spider(keylist,savefilename=filename,savedir='/mnt/hgfs/share/stars3')
+    spd.start()

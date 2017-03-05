@@ -16,9 +16,9 @@ def format(source_data):
     l = json.loads(out)
     return l
 
-def dict2file(datadict,filename,indent=4,ensure_ascii=False):
+def dict2file(datadict,filename,mode='w',indent=4,ensure_ascii=False):
     datastr = json.dumps(datadict,indent=4,ensure_ascii=False)
-    with open(filename,'w') as f:
+    with open(filename,mode) as f:
         f.write(datastr)
     return
 
