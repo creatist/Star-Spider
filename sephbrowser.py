@@ -28,7 +28,7 @@ class SePhBrowser():
         elif types == 'firefox':
             self.browser =  webdriver.Firefox()
         elif types == 'chorme':
-            self.browser = webdriver.Chorme()
+            self.browser = webdriver.Chrome()
         else :
             self.browser =  webdriver.PhantomJS()
 
